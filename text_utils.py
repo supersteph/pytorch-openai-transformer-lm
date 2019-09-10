@@ -89,15 +89,15 @@ class TextEncoder(object):
         self.cache[token] = word
         return word
 
-    def encode(self, texts, verbose=True):
+    def encode(self, text, verbose=True):
         texts_tokens = []
         if verbose:
-            for text in tqdm(texts, ncols=80, leave=False):
-                text = self.nlp(text_standardize(ftfy.fix_text(text)))
-                text_tokens = []
-                for token in text:
-                    text_tokens.extend([self.encoder.get(t, 0) for t in self.bpe(token.text.lower()).split(' ')])
-                texts_tokens.append(text_tokens)
+            text = self.nlp(text_standardize(ftfy.fix_text(text)))
+            text_tokens = []
+            for token in text:
+                text_tokens.extend([self.encoder.get(t, 0) for t in self.bpe(token.text.lower()).split(' ')])
+            texts_tokens = text_tokens
+
         else:
             for text in texts:
                 text = self.nlp(text_standardize(ftfy.fix_text(text)))

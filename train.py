@@ -8,52 +8,47 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 
-from analysis import rocstories as rocstories_analysis
-from datasets import rocstories
-from model_pytorch import DoubleHeadModel, load_openai_pretrained_model
+#from analysis import rocstories as rocstories_analysis
+from datasets import getData
+from model_pytorch import LMModel, load_openai_pretrained_model
 from opt import OpenAIAdam
 from text_utils import TextEncoder
 from utils import (encode_dataset, iter_data,
                    ResultLogger, make_path)
-from loss import MultipleChoiceLossCompute
+from loss import LMLossCompute
 
-def transform_roc(X1, X2, X3):
-    n_batch = len(X1)
-    xmb = np.zeros((n_batch, 2, n_ctx, 2), dtype=np.int32)
-    mmb = np.zeros((n_batch, 2, n_ctx), dtype=np.float32)
+def transform_roc(X):
+    n_batch = len(X)
+    xmb = np.zeros((n_batch, n_ctx, 2), dtype=np.int32)
+    mmb = np.zeros((n_batch, n_ctx), dtype=np.float32)
     start = encoder['_start_']
     delimiter = encoder['_delimiter_']
-    for i, (x1, x2, x3), in enumerate(zip(X1, X2, X3)):
-        x12 = [start] + x1[:max_len] + [delimiter] + x2[:max_len] + [clf_token]
-        x13 = [start] + x1[:max_len] + [delimiter] + x3[:max_len] + [clf_token]
-        l12 = len(x12)
-        l13 = len(x13)
-        xmb[i, 0, :l12, 0] = x12
-        xmb[i, 1, :l13, 0] = x13
-        mmb[i, 0, :l12] = 1
-        mmb[i, 1, :l13] = 1
+    for i, x, in enumerate(X):
+        x = [start] + x[:max_len] + [delimiter]
+        l = len(x)
+        xmb[i, 0:l, 0] = x
+        mmb[i, 0:l] = 1
     # Position information that is added to the input embeddings in the TransformerModel
-    xmb[:, :, :, 1] = np.arange(n_vocab + n_special, n_vocab + n_special + n_ctx)
+    xmb[:, :, 1] = np.arange(n_vocab + n_special, n_vocab + n_special + n_ctx)
     return xmb, mmb
 
 
-def iter_apply(Xs, Ms, Ys):
+def iter_apply(Xs, Ms):
     # fns = [lambda x: np.concatenate(x, 0), lambda x: float(np.sum(x))]
     logits = []
     cost = 0
     with torch.no_grad():
         dh_model.eval()
-        for xmb, mmb, ymb in iter_data(Xs, Ms, Ys, n_batch=n_batch_train, truncate=False, verbose=True):
+        for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
-            YMB = torch.tensor(ymb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
-            _, clf_logits = dh_model(XMB)
-            clf_logits *= n
-            clf_losses = compute_loss_fct(XMB, YMB, MMB, clf_logits, only_return_losses=True)
-            clf_losses *= n
-            logits.append(clf_logits.to("cpu").numpy())
-            cost += clf_losses.sum().item()
+            lm_logits = dh_model(XMB)
+            lm_logits *= n
+            lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
+            lm_losses *= n
+            logits.append(lm_logits.to("cpu").numpy())
+            cost += lm_losses.sum().item()
         logits = np.concatenate(logits, 0)
     return logits, cost
 
@@ -75,16 +70,14 @@ def iter_predict(Xs, Ms):
 def log(save_dir, desc):
     global best_score
     print("Logging")
-    tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid], trY[:n_valid])
-    va_logits, va_cost = iter_apply(vaX, vaM, vaY)
-    tr_cost = tr_cost / len(trY[:n_valid])
+    tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
+    va_logits, va_cost = iter_apply(vaX, vaM)
+    tr_cost = tr_cost / len(trX[:n_valid])
     va_cost = va_cost / n_valid
-    tr_acc = accuracy_score(trY[:n_valid], np.argmax(tr_logits, 1)) * 100.
-    va_acc = accuracy_score(vaY, np.argmax(va_logits, 1)) * 100.
-    logger.log(n_epochs=n_epochs, n_updates=n_updates, tr_cost=tr_cost, va_cost=va_cost, tr_acc=tr_acc, va_acc=va_acc)
-    print('%d %d %.3f %.3f %.2f %.2f' % (n_epochs, n_updates, tr_cost, va_cost, tr_acc, va_acc))
+    logger.log(n_epochs=n_epochs, n_updates=n_updates, tr_cost=tr_cost, va_cost=va_cost)
+    print('%d %d %.3f %.3f' % (n_epochs, n_updates, tr_cost, va_cost))
     if submit:
-        score = va_acc
+        score = va_cost
         if score > best_score:
             best_score = score
             path = os.path.join(save_dir, desc, 'best_params')
@@ -107,15 +100,14 @@ def predict(dataset, submission_dir):
 
 
 def run_epoch():
-    for xmb, mmb, ymb in iter_data(*shuffle(trX, trM, trYt, random_state=np.random),
+    for xmb, mmb in iter_data(*shuffle(trX, trM, random_state=np.random),
                                    n_batch=n_batch_train, truncate=True, verbose=True):
         global n_updates
         dh_model.train()
         XMB = torch.tensor(xmb, dtype=torch.long).to(device)
-        YMB = torch.tensor(ymb, dtype=torch.long).to(device)
         MMB = torch.tensor(mmb).to(device)
-        lm_logits, clf_logits = dh_model(XMB)
-        compute_loss_fct(XMB, YMB, MMB, clf_logits, lm_logits)
+        lm_logits = dh_model(XMB)
+        compute_loss_fct(XMB, MMB, lm_logits)
         n_updates += 1
         if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
             log(save_dir, desc)
@@ -138,7 +130,6 @@ label_decoders = {
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--desc', type=str, help="Description")
-    parser.add_argument('--dataset', type=str)
     parser.add_argument('--log_dir', type=str, default='log/')
     parser.add_argument('--save_dir', type=str, default='save/')
     parser.add_argument('--data_dir', type=str, default='data/')
@@ -183,7 +174,6 @@ if __name__ == '__main__':
 
     # Constants
     submit = args.submit
-    dataset = args.dataset
     n_ctx = args.n_ctx
     save_dir = args.save_dir
     desc = args.desc
@@ -201,36 +191,27 @@ if __name__ == '__main__':
     n_vocab = len(text_encoder.encoder)
 
     print("Encoding dataset...")
-    ((trX1, trX2, trX3, trY),
-     (vaX1, vaX2, vaX3, vaY),
-     (teX1, teX2, teX3)) = encode_dataset(*rocstories(data_dir, n_valid=args.n_valid),
-                                          encoder=text_encoder)
+    (trX, vaX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
+                                        encoder=text_encoder)
     encoder['_start_'] = len(encoder)
     encoder['_delimiter_'] = len(encoder)
-    encoder['_classify_'] = len(encoder)
-    clf_token = encoder['_classify_']
     n_special = 3
     max_len = n_ctx // 2 - 2
     n_ctx = min(max(
-        [len(x1[:max_len]) + max(len(x2[:max_len]),
-                                 len(x3[:max_len])) for x1, x2, x3 in zip(trX1, trX2, trX3)]
-        + [len(x1[:max_len]) + max(len(x2[:max_len]),
-                                   len(x3[:max_len])) for x1, x2, x3 in zip(vaX1, vaX2, vaX3)]
-        + [len(x1[:max_len]) + max(len(x2[:max_len]),
-                                   len(x3[:max_len])) for x1, x2, x3 in zip(teX1, teX2, teX3)]
+        [len(x[:max_len])  for x in trX]
+        + [len(x[:max_len]) for x in vaX]
         ) + 3, n_ctx)
     vocab = n_vocab + n_special + n_ctx
-    trX, trM = transform_roc(trX1, trX2, trX3)
-    vaX, vaM = transform_roc(vaX1, vaX2, vaX3)
-    if submit:
-        teX, teM = transform_roc(teX1, teX2, teX3)
+    trX, trM = transform_roc(trX)
+    vaX, vaM = transform_roc(vaX)
 
-    n_train = len(trY)
-    n_valid = len(vaY)
+    n_train = len(trX)
+    n_valid = len(vaX)
+
     n_batch_train = args.n_batch * max(n_gpu, 1)
     n_updates_total = (n_train // n_batch_train) * args.n_iter
 
-    dh_model = DoubleHeadModel(args, clf_token, 'multiple_choice', vocab, n_ctx)
+    dh_model = LMModel(args, vocab, n_ctx)
 
     criterion = nn.CrossEntropyLoss(reduce=False)
     model_opt = OpenAIAdam(dh_model.parameters(),
@@ -244,10 +225,7 @@ if __name__ == '__main__':
                            l2=args.l2,
                            vector_l2=args.vector_l2,
                            max_grad_norm=args.max_grad_norm)
-    compute_loss_fct = MultipleChoiceLossCompute(criterion,
-                                                 criterion,
-                                                 args.lm_coef,
-                                                 model_opt)
+    compute_loss_fct = LMLossCompute(criterion, model_opt)
     load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
 
     dh_model.to(device)
@@ -255,8 +233,6 @@ if __name__ == '__main__':
 
     n_updates = 0
     n_epochs = 0
-    if dataset != 'stsb':
-        trYt = trY
     if submit:
         path = os.path.join(save_dir, desc, 'best_params')
         torch.save(dh_model.state_dict(), make_path(path))
@@ -266,10 +242,10 @@ if __name__ == '__main__':
         run_epoch()
         n_epochs += 1
         log(save_dir, desc)
-    if submit:
-        path = os.path.join(save_dir, desc, 'best_params')
-        dh_model.load_state_dict(torch.load(path))
-        predict(dataset, args.submission_dir)
-        if args.analysis:
-            rocstories_analysis(data_dir, os.path.join(args.submission_dir, 'ROCStories.tsv'),
-                                os.path.join(log_dir, 'rocstories.jsonl'))
+    # if submit:
+    #     path = os.path.join(save_dir, desc, 'best_params')
+    #     dh_model.load_state_dict(torch.load(path))
+    #     predict(dataset, args.submission_dir)
+    #     if args.analysis:
+    #         rocstories_analysis(data_dir, os.path.join(args.submission_dir, 'ROCStories.tsv'),
+    #                             os.path.join(log_dir, 'rocstories.jsonl'))

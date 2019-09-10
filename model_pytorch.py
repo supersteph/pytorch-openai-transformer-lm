@@ -277,7 +277,7 @@ class LMModel(nn.Module):
     def __init__(self, cfg, vocab=40990, n_ctx=512, return_probs=False):
         super(LMModel, self).__init__()
         self.transformer = TransformerModel(cfg, vocab=vocab, n_ctx=n_ctx)
-        self.lm_head = LMHead(self.transformer, cfg, trunc_and_reshape=False)
+        self.lm_head = LMHead(self.transformer, cfg, trunc_and_reshape=True)
         self.return_probs = return_probs
         if self.return_probs:
             pos_emb_mask = torch.zeros(1, 1, vocab)
