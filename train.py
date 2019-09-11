@@ -227,7 +227,7 @@ if __name__ == '__main__':
                            max_grad_norm=args.max_grad_norm)
     compute_loss_fct = LMLossCompute(criterion, model_opt)
     load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
-
+    print(dh_model.parameters())
     dh_model.to(device)
     dh_model = nn.DataParallel(dh_model)
 
