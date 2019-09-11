@@ -205,8 +205,8 @@ if __name__ == '__main__':
     # trX, trM = transform_roc(trX)
     # vaX, vaM = transform_roc(vaX)
 
-    # n_train = len(trX)
-    # n_valid = len(vaX)
+    n_train = len(trX)
+    n_valid = len(vaX)
 
     n_batch_train = args.n_batch * max(n_gpu, 1)
     n_updates_total = (n_train // n_batch_train) * args.n_iter
