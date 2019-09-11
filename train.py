@@ -242,8 +242,8 @@ if __name__ == '__main__':
         run_epoch()
         n_epochs += 1
         log(save_dir, desc)
-    # if submit:
-    #     path = os.path.join(save_dir, desc, 'best_params')
+    if submit:
+        path = os.path.join(save_dir, desc, 'best_params')
     #     dh_model.load_state_dict(torch.load(path))
     #     predict(dataset, args.submission_dir)
     #     if args.analysis:

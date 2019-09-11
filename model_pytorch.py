@@ -310,7 +310,7 @@ class DoubleHeadModel(nn.Module):
             else:
                 raise ValueError("task_head_type is expected to be 'multiple_choice' "
                                  "'similarity', 'inference' or ('classification', n_class) "
-                                 f"got {task_head_type}.")
+                                 "got {task_head_type}.")
         elif isinstance(task_head_type, collections.abc.Sequence) and len(task_head_type) == 2 and \
              task_head_type[0] == 'classification':
             n_class = task_head_type[1]
