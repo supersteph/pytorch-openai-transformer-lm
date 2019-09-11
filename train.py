@@ -17,6 +17,7 @@ from utils import (encode_dataset, iter_data,
                    ResultLogger, make_path)
 from loss import LMLossCompute
 
+
 def transform_roc(X):
     n_batch = len(X)
     xmb = np.zeros((n_batch, n_ctx, 2), dtype=np.int32)
@@ -142,7 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_grad_norm', type=int, default=1)
     parser.add_argument('--lr', type=float, default=6.25e-5)
     parser.add_argument('--lr_warmup', type=float, default=0.002)
-    parser.add_argument('--n_ctx', type=int, default=4)
+    parser.add_argument('--n_ctx', type=int, default=512)
     parser.add_argument('--n_embd', type=int, default=768)
     parser.add_argument('--n_head', type=int, default=12)
     parser.add_argument('--n_layer', type=int, default=12)
@@ -226,7 +227,7 @@ if __name__ == '__main__':
                            vector_l2=args.vector_l2,
                            max_grad_norm=args.max_grad_norm)
     compute_loss_fct = LMLossCompute(criterion, model_opt)
-    #load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
+    load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
     dh_model.to(device)
     dh_model = nn.DataParallel(dh_model)
 
