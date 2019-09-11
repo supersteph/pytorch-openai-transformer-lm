@@ -190,23 +190,23 @@ if __name__ == '__main__':
     encoder = text_encoder.encoder
     n_vocab = len(text_encoder.encoder)
 
-    print("Encoding dataset...")
-    (trX, vaX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
-                                        encoder=text_encoder)
-    encoder['_start_'] = len(encoder)
-    encoder['_delimiter_'] = len(encoder)
-    n_special = 3
-    max_len = n_ctx // 2 - 2
-    n_ctx = min(max(
-        [len(x[:max_len])  for x in trX]
-        + [len(x[:max_len]) for x in vaX]
-        ) + 3, n_ctx)
-    vocab = n_vocab + n_special + n_ctx
-    trX, trM = transform_roc(trX)
-    vaX, vaM = transform_roc(vaX)
+    # print("Encoding dataset...")
+    # (trX, vaX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
+    #                                     encoder=text_encoder)
+    # encoder['_start_'] = len(encoder)
+    # encoder['_delimiter_'] = len(encoder)
+    # n_special = 3
+    # max_len = n_ctx // 2 - 2
+    # n_ctx = min(max(
+    #     [len(x[:max_len])  for x in trX]
+    #     + [len(x[:max_len]) for x in vaX]
+    #     ) + 3, n_ctx)
+    # vocab = n_vocab + n_special + n_ctx
+    # trX, trM = transform_roc(trX)
+    # vaX, vaM = transform_roc(vaX)
 
-    n_train = len(trX)
-    n_valid = len(vaX)
+    # n_train = len(trX)
+    # n_valid = len(vaX)
 
     n_batch_train = args.n_batch * max(n_gpu, 1)
     n_updates_total = (n_train // n_batch_train) * args.n_iter
@@ -226,8 +226,7 @@ if __name__ == '__main__':
                            vector_l2=args.vector_l2,
                            max_grad_norm=args.max_grad_norm)
     compute_loss_fct = LMLossCompute(criterion, model_opt)
-    load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
-    print(dh_model.parameters())
+    #load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
     dh_model.to(device)
     dh_model = nn.DataParallel(dh_model)
 
