@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import random
@@ -64,7 +66,7 @@ def iter_predict(Xs, Ms):
             MMB = torch.tensor(mmb).to(device)
             _, clf_logits = dh_model(XMB)
             logits.append(clf_logits.to("cpu").numpy())
-    logits = np.concatenate(logits, 0)
+    logits = np.concaten_attnate(logits, 0)
     return logits
 
 
