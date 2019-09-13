@@ -318,7 +318,7 @@ class DoubleHeadModel(nn.Module):
         else:
             raise ValueError("task_head_type is expected to be 'multiple_choice' "
                              "'similarity', 'inference' or ('classification', n_class) "
-                             f"got {task_head_type}.")
+                             "got {task_head_type}.")
 
     def forward(self, x):
         h = self.transformer(x)
