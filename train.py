@@ -216,6 +216,9 @@ if __name__ == '__main__':
 
     dh_model = LMModel(args, vocab, n_ctx)
 
+    print(torch.cuda.memory_allocated(device=device))
+    print(torch.cuda.max_memory_allocated(device=device))
+
     criterion = nn.CrossEntropyLoss(reduce=False)
     model_opt = OpenAIAdam(dh_model.parameters(),
                            lr=args.lr,
