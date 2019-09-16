@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
+import time
 
 #from analysis import rocstories as rocstories_analysis
 from datasets import getData
@@ -106,6 +107,7 @@ def run_epoch():
     for xmb, mmb in iter_data(*shuffle(trX, trM, random_state=np.random),
                                    n_batch=n_batch_train, truncate=True, verbose=True):
         global n_updates
+        print(time.time()-start)
         dh_model.train()
         XMB = torch.tensor(xmb, dtype=torch.long).to(device)
         MMB = torch.tensor(mmb).to(device)
@@ -174,6 +176,7 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
+    start = time.time()
 
     # Constants
     submit = args.submit
@@ -216,9 +219,6 @@ if __name__ == '__main__':
 
     dh_model = LMModel(args, vocab, n_ctx)
 
-    print(torch.cuda.memory_allocated(device=device))
-    print(torch.cuda.max_memory_allocated(device=device))
-
     criterion = nn.CrossEntropyLoss(reduce=False)
     model_opt = OpenAIAdam(dh_model.parameters(),
                            lr=args.lr,
@@ -235,9 +235,6 @@ if __name__ == '__main__':
     load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
     dh_model.to(device)
     dh_model = nn.DataParallel(dh_model)
-    print(torch.cuda.memory_allocated(device=device))
-    print(torch.cuda.max_memory_allocated(device=device))
-
     n_updates = 0
     n_epochs = 0
     if submit:
