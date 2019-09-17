@@ -5,6 +5,6 @@ i = 0
 while True:
   delta=dt.datetime.now()-t
   if delta.seconds >= 60:
-  	 i++
+  	 i+=1
      print(str())
      t = dt.datetime.now()
