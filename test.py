@@ -1,9 +1,10 @@
 import datetime as dt
-
+start = dt.datetime.now()
 t = dt.datetime.now()
-
+i = 0
 while True:
   delta=dt.datetime.now()-t
   if delta.seconds >= 60:
-     print("1 Min")
+  	 i++
+     print(str())
      t = dt.datetime.now()
