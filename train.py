@@ -107,7 +107,6 @@ def run_epoch():
     for xmb, mmb in iter_data(*shuffle(trX, trM, random_state=np.random),
                                    n_batch=n_batch_train, truncate=True, verbose=True):
         global n_updates
-        print(time.time()-start)
         dh_model.train()
         XMB = torch.tensor(xmb, dtype=torch.long).to(device)
         MMB = torch.tensor(mmb).to(device)
