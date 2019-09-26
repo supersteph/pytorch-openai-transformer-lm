@@ -194,7 +194,7 @@ if __name__ == '__main__':
     text_encoder = TextEncoder(args.encoder_path, args.bpe_path)
     encoder = text_encoder.encoder
     n_vocab = len(text_encoder.encoder)
-
+    start_time = time.time()
     print("Encoding dataset...")
     (trX, vaX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
                                         encoder=text_encoder)
@@ -240,6 +240,8 @@ if __name__ == '__main__':
         path = os.path.join(save_dir, desc, 'best_params')
         torch.save(dh_model.state_dict(), make_path(path))
     best_score = 0
+
+    print(time.time()-start_time)
     for i in range(args.n_iter):
         print("running epoch", i)
         run_epoch()
