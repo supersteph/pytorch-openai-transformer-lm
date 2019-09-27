@@ -118,6 +118,7 @@ def run_epoch():
         n_updates += 1
         if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
             log(save_dir, desc)
+        print("done logging")
 
 
 argmax = lambda x: np.argmax(x, 1)
