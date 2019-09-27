@@ -76,16 +76,21 @@ def log(save_dir, desc):
     print("Logging")
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     va_logits, va_cost = iter_apply(vaX, vaM)
+    print("do")
     tr_cost = tr_cost / len(trX[:n_valid])
     va_cost = va_cost / n_valid
+    print("re")
     logger.log(n_epochs=n_epochs, n_updates=n_updates, tr_cost=tr_cost, va_cost=va_cost)
     print('%d %d %.3f %.3f' % (n_epochs, n_updates, tr_cost, va_cost))
+    print("mi")
     if submit:
         score = va_cost
         if score > best_score:
+            print("fa")
             best_score = score
             path = os.path.join(save_dir, desc, 'best_params')
             torch.save(dh_model.state_dict(), make_path(path))
+            print("so")
 
 
 def predict(dataset, submission_dir):
@@ -110,11 +115,8 @@ def run_epoch():
         dh_model.train()
         XMB = torch.tensor(xmb, dtype=torch.long).to(device)
         MMB = torch.tensor(mmb).to(device)
-        print("do")
         lm_logits = dh_model(XMB)
-        print("re")
         compute_loss_fct(XMB, MMB, lm_logits)
-        print("mi")
         n_updates += 1
         if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
             log(save_dir, desc)
