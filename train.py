@@ -41,18 +41,23 @@ def iter_apply(Xs, Ms):
     # fns = [lambda x: np.concatenate(x, 0), lambda x: float(np.sum(x))]
     logits = []
     cost = 0
+    print("do")
     with torch.no_grad():
         dh_model.eval()
+        print("re")
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
+            print("mi")
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
             lm_logits = dh_model(XMB)
+            print("fa")
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
             logits.append(lm_logits.to("cpu").numpy())
             cost += lm_losses.sum().item()
+            print("so")
         logits = np.concatenate(logits, 0)
     return logits, cost
 
@@ -120,7 +125,6 @@ def run_epoch():
         n_updates += 1
         if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
             log(save_dir, desc)
-        print("done logging")
 
 
 argmax = lambda x: np.argmax(x, 1)
