@@ -9,6 +9,7 @@ class LMLossCompute:
 
     def __call__(self, X, M, lm_logits, only_return_losses=False):
         # Language modeling loss
+        print("start loss")
         x_shifted = X[:, 1:, 0].contiguous().view(-1)  # Shape: 252
         M = M.view(-1, M.size(1))
         lm_losses = self.lm_criterion(lm_logits, x_shifted)
@@ -24,4 +25,5 @@ class LMLossCompute:
         if self.opt is not None:
             self.opt.step()
             self.opt.zero_grad()
+        print("finish loss")
         return train_loss.item()
