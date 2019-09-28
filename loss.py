@@ -13,11 +13,12 @@ class LMLossCompute:
         x_shifted = X[:, 1:, 0].contiguous().view(-1)  # Shape: 252
         M = M.view(-1, M.size(1))
         lm_losses = self.lm_criterion(lm_logits, x_shifted)
+        print("finished criterion")
         lm_losses = lm_losses.view(X.size(0), X.size(1)-1)
         lm_losses = lm_losses * M[:, 1:]
         lm_losses = lm_losses.sum(1) / torch.sum(M[:, 1:], 1)
-
         if only_return_losses:
+            print("returned loss")
             return lm_losses
 
         train_loss = lm_losses.sum()
