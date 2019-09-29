@@ -56,7 +56,7 @@ def iter_apply(Xs, Ms):
             print("hello")
             lm_losses *= n
             print("do")
-            logits.append(lm_logits.to("cpu").numpy())
+            logits.append(lm_logits.numpy())
             print("i suspect")
             cost += lm_losses.sum().item()
             print("so")
