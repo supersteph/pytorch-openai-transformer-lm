@@ -41,7 +41,6 @@ def iter_apply(Xs, Ms):
     # fns = [lambda x: np.concatenate(x, 0), lambda x: float(np.sum(x))]
     logits = []
     cost = 0
-    print("do")
     with torch.no_grad():
         dh_model.eval()
         print("re")
@@ -54,8 +53,11 @@ def iter_apply(Xs, Ms):
             print("fa")
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
+            print("hello")
             lm_losses *= n
+            print("do")
             logits.append(lm_logits.to("cpu").numpy())
+            print("i suspect")
             cost += lm_losses.sum().item()
             print("so")
         logits = np.concatenate(logits, 0)
