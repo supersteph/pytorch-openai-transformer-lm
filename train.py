@@ -10,6 +10,7 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 import time
+import psutil
 
 #from analysis import rocstories as rocstories_analysis
 from datasets import getData
@@ -43,29 +44,17 @@ def iter_apply(Xs, Ms):
     cost = 0
     with torch.no_grad():
         dh_model.eval()
-        print("re")
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
-            print("mi")
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
             lm_logits = dh_model(XMB)
-            print("fa")
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
-            print("hello")
             lm_losses *= n
-            print("do")
-            lm_logits
-            print("before cpu")
-            lm_logits.cpu()
-            print("after cpu")
-            lm_logits.cpu().numpy()
-            print("numpy")
+
             logits.append(lm_logits.cpu().numpy())
-            print("i suspect")
             cost += lm_losses.sum().item()
-            print("so")
         logits = np.concatenate(logits, 0)
     return logits, cost
 
@@ -79,7 +68,10 @@ def iter_predict(Xs, Ms):
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
             _, clf_logits = dh_model(XMB)
+            print(psutil.cpu_percent())
             logits.append(clf_logits.to("cpu").numpy())
+            print(psutil.cpu_percent())
+            print("\n")
     logits = np.concaten_attnate(logits, 0)
     return logits
 
