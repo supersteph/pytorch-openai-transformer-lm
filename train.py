@@ -70,9 +70,9 @@ def iter_predict(Xs, Ms):
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
             _, clf_logits = dh_model(XMB)
-            print(psutil.cpu_percent())
+            print(psutil.virtual_memory())
             logits.append(clf_logits.to("cpu").numpy())
-            print(psutil.cpu_percent())
+            print(psutil.virtual_memory())
             print("\n")
     logits = np.concaten_attnate(logits, 0)
     return logits
