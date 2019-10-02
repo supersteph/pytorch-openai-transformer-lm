@@ -14,7 +14,7 @@ def _getData(path):
         return f.readlines()
 
 def getData(data_dir, n_train=1497, n_valid=374):
-    trStuff = _getData(os.path.join(data_dir, 'halftrain.txt'))
+    trStuff = _getData(os.path.join(data_dir, 'firsttrain.txt'))
     vaStuff = _getData(os.path.join(data_dir, 'firsttest.txt'))
     #teX1, teX2, teX3, _ = _rocstories(os.path.join(data_dir, 'cloze_test_test__spring2016 - cloze_test_ALL_test.csv'))
     trX = []
