@@ -52,7 +52,7 @@ def iter_apply(Xs, Ms):
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
-            print(lm_logits.type())
+            print(psutil.cpu_percent())
             logits.append(lm_logits.cpu().numpy())
             print(psutil.cpu_percent())
             print("\n")
@@ -71,8 +71,10 @@ def iter_predict(Xs, Ms):
             MMB = torch.tensor(mmb).to(device)
             _, clf_logits = dh_model(XMB)
             print(psutil.virtual_memory())
+            print(reduce(lambda x, y: x*y, lm_logits.size()) * 32)
             logits.append(clf_logits.to("cpu").numpy())
             print(psutil.virtual_memory())
+
             print("\n")
     logits = np.concaten_attnate(logits, 0)
     return logits
