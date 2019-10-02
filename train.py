@@ -71,8 +71,8 @@ def iter_predict(Xs, Ms):
             MMB = torch.tensor(mmb).to(device)
             _, clf_logits = dh_model(XMB)
             #print(psutil.virtual_memory())
-            #print(reduce(lambda x, y: x*y, lm_logits.size()) * 32)
-            logits.append(clf_logits.detach().to("cpu").numpy())
+            print(reduce(lambda x, y: x*y, lm_logits.size()) * 32)
+            logits.append(clf_logits.deatch().cpu().clone().numpy())
             #print(psutil.virtual_memory())
 
             print("\n")
