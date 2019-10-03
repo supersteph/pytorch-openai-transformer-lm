@@ -10,7 +10,7 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 import time
-import psutil
+#import psutil
 
 #from analysis import rocstories as rocstories_analysis
 from datasets import getData
@@ -52,7 +52,7 @@ def iter_apply(Xs, Ms):
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
-            print(reduce(lambda x, y: x*y, lm_logits.size()) * 32)
+            print(logits.size())
             logits.append(lm_logits.detach().cpu().clone().numpy())
             cost += lm_losses.sum().item()
         logits = np.concatenate(logits, 0)
