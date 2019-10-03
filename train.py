@@ -80,6 +80,7 @@ def iter_predict(Xs, Ms):
 def log(save_dir, desc):
     global best_score
     print("Logging")
+    print(time.time()-start)
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     print("valid")
     va_logits, va_cost = iter_apply(vaX, vaM)
