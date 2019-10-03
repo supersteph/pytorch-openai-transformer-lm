@@ -121,7 +121,7 @@ def run_epoch():
         lm_logits = dh_model(XMB)
         compute_loss_fct(XMB, MMB, lm_logits)
         n_updates += 1
-        if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
+        if n_updates in [100, 1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
             log(save_dir, desc)
 
 
