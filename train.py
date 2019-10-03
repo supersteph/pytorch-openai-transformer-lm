@@ -44,6 +44,7 @@ def iter_apply(Xs, Ms):
     cost = 0
     with torch.no_grad():
         dh_model.eval()
+        print(device)
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
@@ -80,6 +81,7 @@ def log(save_dir, desc):
     global best_score
     print("Logging")
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
+    print("valid")
     va_logits, va_cost = iter_apply(vaX, vaM)
     tr_cost = tr_cost / len(trX[:n_valid])
     va_cost = va_cost / n_valid
