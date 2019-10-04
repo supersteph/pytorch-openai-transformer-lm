@@ -54,9 +54,9 @@ def iter_apply(Xs, Ms):
 
             dataframes = [ao for ao in all_objects if isinstance(ao, torch.Tensor)]
             for d in dataframes:
-                print d.columns.values
-                print len(d)
-                
+                print(d.columns.values)
+                print(len(d))
+
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
