@@ -48,14 +48,14 @@ def iter_apply(Xs, Ms):
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
 
             all_objects = muppy.get_objects()
-            sum1 = summary.summarize(all_objects)
-# Prints out a summary of the large objects
-            summary.print_(sum1)
+#             sum1 = summary.summarize(all_objects)
+# # Prints out a summary of the large objects
+#             summary.print_(sum1)
 
-            dataframes = [ao for ao in all_objects if isinstance(ao, torch.Tensor)]
-            for d in dataframes:
-                print(d.columns.values)
-                print(len(d))
+#             dataframes = [ao for ao in all_objects if isinstance(ao, torch.Tensor)]
+#             for d in dataframes:
+#                 print(d.columns.values)
+#                 print(len(d))
 
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
