@@ -66,7 +66,7 @@ def iter_apply(Xs, Ms):
             lm_losses *= n
             #logits.append(lm_logits.detach().cpu().clone().numpy())
             cost += lm_losses.sum().item()
-        logits = np.concatenate(logits, 0)
+        #logits = np.concatenate(logits, 0)
     return logits, cost
 
 
