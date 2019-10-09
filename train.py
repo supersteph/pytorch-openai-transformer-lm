@@ -52,35 +52,19 @@ def iter_apply(Xs, Ms):
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
-            print(lm_logits.size())
+            #print(lm_logits.size())
             logits.append(lm_logits.data.cpu().numpy())
-            print(len(logits))
+            #print(len(logits))
             cost += lm_losses.sum().item()
         logits = np.concatenate(logits, 0)
     return logits, cost
 
 
-def iter_predict(Xs, Ms):
-    logits = []
-    with torch.no_grad():
-        dh_model.eval()
-        for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
-            n = len(xmb)
-            XMB = torch.tensor(xmb, dtype=torch.long).to(device)
-            MMB = torch.tensor(mmb).to(device)
-            _, clf_logits = dh_model(XMB)
-            #print(psutil.virtual_memory())
-            #print(reduce(lambda x, y: x*y, lm_logits.size()) * 32)
-            logits.append(clf_logits.cpu().clone().deatch().numpy())
-
-    logits = np.concaten_attnate(logits, 0)
-    return logits
-
 
 def log(save_dir, desc):
     global best_score
     print("Logging")
-    print(n_valid)
+    print(trX.size())
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     print("valid")
     va_logits, va_cost = iter_apply(vaX, vaM)
