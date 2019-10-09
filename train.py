@@ -64,7 +64,8 @@ def iter_apply(Xs, Ms):
 def log(save_dir, desc):
     global best_score
     print("Logging")
-    print(trX.size())
+    print(type(trX))
+    print(trX.shape)
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     print("valid")
     va_logits, va_cost = iter_apply(vaX, vaM)
