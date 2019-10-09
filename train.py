@@ -43,7 +43,6 @@ def iter_apply(Xs, Ms):
     # fns = [lambda x: np.concatenate(x, 0), lambda x: float(np.sum(x))]
     logits = []
     cost = 0
-    print(Xs.shape)
     with torch.no_grad():
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
@@ -53,8 +52,7 @@ def iter_apply(Xs, Ms):
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             #print(len(logits))
             cost += lm_losses.sum().item()
-        logits = np.concatenate(logits, 0)
-    return logits, cost
+    return cost
 
 
 
