@@ -61,7 +61,6 @@ def log(save_dir, desc):
     print("Logging")
     #trX is 2000 257 2
     tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
-    print("valid")
     va_cost = iter_apply(vaX, vaM)
     tr_cost = tr_cost / len(trX[:n_valid])
     va_cost = va_cost / n_valid
