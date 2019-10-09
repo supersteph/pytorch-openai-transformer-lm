@@ -47,16 +47,10 @@ def iter_apply(Xs, Ms):
     with torch.no_grad():
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
-            XMB = torch.tensor(xmb, dtype=torch.long).to(device)
-            print(XMB.size())
+            XMB = torch.tensor(xmb, dtype=torch.long).to(device) #16 257 2
             MMB = torch.tensor(mmb).to(device)
             lm_logits = dh_model(XMB)
-            lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
-            lm_losses *= n
-            print(lm_logits.size())
-            #lm_logits is (4096 40738)
-            logits.append(lm_logits.data.cpu().numpy())
             #print(len(logits))
             cost += lm_losses.sum().item()
         logits = np.concatenate(logits, 0)
@@ -68,9 +62,9 @@ def log(save_dir, desc):
     global best_score
     print("Logging")
     #trX is 2000 257 2
-    tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
+    tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     print("valid")
-    va_logits, va_cost = iter_apply(vaX, vaM)
+    va_cost = iter_apply(vaX, vaM)
     tr_cost = tr_cost / len(trX[:n_valid])
     va_cost = va_cost / n_valid
     logger.log(n_epochs=n_epochs, n_updates=n_updates, tr_cost=tr_cost, va_cost=va_cost)
