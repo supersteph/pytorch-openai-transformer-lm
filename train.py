@@ -186,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--b1', type=float, default=0.9)
     parser.add_argument('--b2', type=float, default=0.999)
     parser.add_argument('--e', type=float, default=1e-8)
-    parser.add_argument('--n_valid', type=int, default=374)
+    parser.add_argument('--n_valid', type=int, default=64)
 
     args = parser.parse_args()
     print(args)
