@@ -65,8 +65,10 @@ def iter_apply(Xs, Ms):
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
             logits.append(lm_logits.data.cpu().numpy())
+            print(len(logits))
+            print(logits.size)
             cost += lm_losses.sum().item()
-        #logits = np.concatenate(logits, 0)
+        logits = np.concatenate(logits, 0)
     return logits, cost
 
 
