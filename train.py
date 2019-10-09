@@ -43,16 +43,19 @@ def iter_apply(Xs, Ms):
     # fns = [lambda x: np.concatenate(x, 0), lambda x: float(np.sum(x))]
     logits = []
     cost = 0
+    print(Xs.shape)
     with torch.no_grad():
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
+            print(XMB.size())
             MMB = torch.tensor(mmb).to(device)
             lm_logits = dh_model(XMB)
             lm_logits *= n
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             lm_losses *= n
-            #print(lm_logits.size())
+            print(lm_logits.size())
+            #lm_logits is (4096 40738)
             logits.append(lm_logits.data.cpu().numpy())
             #print(len(logits))
             cost += lm_losses.sum().item()
@@ -64,8 +67,7 @@ def iter_apply(Xs, Ms):
 def log(save_dir, desc):
     global best_score
     print("Logging")
-    print(type(trX))
-    print(trX.shape)
+    #trX is 2000 257 2
     tr_logits, tr_cost = iter_apply(trX[:n_valid], trM[:n_valid])
     print("valid")
     va_logits, va_cost = iter_apply(vaX, vaM)
