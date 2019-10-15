@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     n_special = 3
     max_len = n_ctx // 2 - 2
-    n_ctx = 95;
+    n_ctx = 257;
     vocab = n_vocab + n_special + n_ctx
 
     n_train = len(firstsent)
