@@ -158,9 +158,10 @@ if __name__ == '__main__':
 
     n_special = 3
     max_len = n_ctx // 2 - 2
-    n_ctx = 257;
+    n_ctx = 95;
     vocab = n_vocab + n_special + n_ctx
-
+    print(max(firstbpe, key=len))
+    print(len(max(secondbpe, key=len)))
     n_train = len(firstsent)
     n_valid = len(secondsent)
 

@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     # Constants
     submit = args.submit
-    n_ctx = args.n_ctx
+    n_ctx = 625
     save_dir = args.save_dir
     desc = args.desc
     data_dir = args.data_dir
