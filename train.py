@@ -197,19 +197,6 @@ if __name__ == '__main__':
     encoder['_start_'] = len(encoder)
     encoder['_delimiter_'] = len(encoder)
 
-    else:
-        count1 = 0
-        count2 = 0
-        for i in range(len(firstsent)):
-            if firstsent[i] in word2id:
-                count1 ++
-            if secondsent[i] in word2id:
-                count2 ++
-        if count1 != count2:
-            return count1 > count2
-        logits1 = predictfunc(firstsent)
-        logits2 = predictfunc(secondsent)
-        return torch.cumsum(logits1)>torch.cumsum(logits2)
     n_special = 3
     max_len = n_ctx // 2 - 2
     n_ctx = 625*2
