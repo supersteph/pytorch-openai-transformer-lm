@@ -14,10 +14,10 @@ def _getData(path):
         X = []
         for item in f.readlines():
             X.extend(item.split("\t"))
-        return [sent for sent in X[::3]], [sent for sent in X[2::3]]
+        return [sent for sent in X[::2]], [sent for sent in X[1::2]]
 
 def getData(data_dir, n_train=1497, n_valid=374):
-    first, second = _getData(os.path.join(os.getcwd(), 'training.txt'))
+    first, second = _getData(os.path.join(os.getcwd(), 'trainproper.txt'))
     #teX1, teX2, teX3, _ = _rocstories(os.path.join(data_dir, 'cloze_test_test__spring2016 - cloze_test_ALL_test.csv'))
     trX1 = []
     trX2 = []
