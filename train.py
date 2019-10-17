@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     # Constants
     submit = args.submit
-    n_ctx = 625
+    n_ctx = 625*2
     save_dir = args.save_dir
     desc = args.desc
     data_dir = args.data_dir
@@ -196,10 +196,7 @@ if __name__ == '__main__':
                                         encoder=text_encoder)
     encoder['_start_'] = len(encoder)
     encoder['_delimiter_'] = len(encoder)
-    print(vaX)
-    def predict(firstsent, secondsent, word2id, predictfunc):
-    if len(firstsent) != len(secondsent):
-        return len(firstsent) > len(secondsent)
+
     else:
         count1 = 0
         count2 = 0
@@ -213,53 +210,50 @@ if __name__ == '__main__':
         logits1 = predictfunc(firstsent)
         logits2 = predictfunc(secondsent)
         return torch.cumsum(logits1)>torch.cumsum(logits2)
-    # n_special = 3
-    # max_len = n_ctx // 2 - 2
-    # n_ctx = min(max(
-    #     [len(x[:max_len])  for x in trX]
-    #     + [len(x[:max_len]) for x in vaX]
-    #     ) + 3, n_ctx)
-    # vocab = n_vocab + n_special + n_ctx
-    # trX, trM = transform_roc(trX)
-    # vaX, vaM = transform_roc(vaX)
+    n_special = 3
+    max_len = n_ctx // 2 - 2
+    n_ctx = 625*2
+    vocab = n_vocab + n_special + n_ctx
+    trX, trM = transform_roc(trX)
+    vaX, vaM = transform_roc(vaX)
 
-    # n_train = len(trX)
-    # n_valid = len(vaX)
+    n_train = len(trX)
+    n_valid = len(vaX)
 
-    # n_batch_train = args.n_batch * max(n_gpu, 1)
-    # n_updates_total = (n_train // n_batch_train) * args.n_iter
+    n_batch_train = args.n_batch * max(n_gpu, 1)
+    n_updates_total = (n_train // n_batch_train) * args.n_iter
 
-    # dh_model = LMModel(args, vocab, n_ctx)
+    dh_model = LMModel(args, vocab, n_ctx)
 
-    # criterion = nn.CrossEntropyLoss(reduce=False)
-    # model_opt = OpenAIAdam(dh_model.parameters(),
-    #                        lr=args.lr,
-    #                        schedule=args.lr_schedule,
-    #                        warmup=args.lr_warmup,
-    #                        t_total=n_updates_total,
-    #                        b1=args.b1,
-    #                        b2=args.b2,
-    #                        e=args.e,
-    #                        l2=args.l2,
-    #                        vector_l2=args.vector_l2,
-    #                        max_grad_norm=args.max_grad_norm)
-    # compute_loss_fct = LMLossCompute(criterion, model_opt)
-    # load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
-    # dh_model.to(device)
-    # dh_model = nn.DataParallel(dh_model)
-    # n_updates = 0
-    # n_epochs = 0
-    # if submit:
-    #     path = os.path.join(save_dir, desc, 'best_params')
-    #     torch.save(dh_model.state_dict(), make_path(path))
-    # best_score = 0
+    criterion = nn.CrossEntropyLoss(reduce=False)
+    model_opt = OpenAIAdam(dh_model.parameters(),
+                           lr=args.lr,
+                           schedule=args.lr_schedule,
+                           warmup=args.lr_warmup,
+                           t_total=n_updates_total,
+                           b1=args.b1,
+                           b2=args.b2,
+                           e=args.e,
+                           l2=args.l2,
+                           vector_l2=args.vector_l2,
+                           max_grad_norm=args.max_grad_norm)
+    compute_loss_fct = LMLossCompute(criterion, model_opt)
+    load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
+    dh_model.to(device)
+    dh_model = nn.DataParallel(dh_model)
+    n_updates = 0
+    n_epochs = 0
+    if submit:
+        path = os.path.join(save_dir, desc, 'best_params')
+        torch.save(dh_model.state_dict(), make_path(path))
+    best_score = 0
 
-    # print(time.time()-start_time)
-    # for i in range(args.n_iter):
-    #     print("running epoch", i)
-    #     run_epoch()
-    #     n_epochs += 1
-    #     log(save_dir, desc)
+    print(time.time()-start_time)
+    for i in range(args.n_iter):
+        print("running epoch", i)
+        run_epoch()
+        n_epochs += 1
+        log(save_dir, desc)
     # if submit:
     #     path = os.path.join(save_dir, desc, 'best_params')
     #     dh_model.load_state_dict(torch.load(path))
