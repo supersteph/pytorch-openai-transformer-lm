@@ -192,7 +192,7 @@ if __name__ == '__main__':
     n_vocab = len(text_encoder.encoder)
     start_time = time.time()
     print("Encoding dataset...")
-    (firstX, secondX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
+    (trX, vaX) = encode_dataset(*getData(data_dir, n_valid=args.n_valid),
                                         encoder=text_encoder)
     encoder['_start_'] = len(encoder)
     encoder['_delimiter_'] = len(encoder)
