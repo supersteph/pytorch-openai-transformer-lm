@@ -13,7 +13,7 @@ import time
 #import psutil
 
 #from analysis import rocstories as rocstories_analysis
-from datasetsp import getData
+from datasets import getData
 from model_pytorch import LMModel, load_openai_pretrained_model
 from opt import OpenAIAdam
 from text_utils import TextEncoder
