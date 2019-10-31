@@ -10,7 +10,7 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 
-from datasets import getData
+from datasetspredict import getData
 from model_pytorch import LMModel, load_openai_pretrained_model
 from opt import OpenAIAdam
 from text_utils import TextEncoder
@@ -158,9 +158,9 @@ if __name__ == '__main__':
 
     n_special = 3
     max_len = n_ctx // 2 - 2
-    n_ctx = 95;
+    n_ctx = 626;
     vocab = n_vocab + n_special + n_ctx
-    print(max(firstbpe, key=len))
+    print(len(max(firstbpe, key=len)))
     print(len(max(secondbpe, key=len)))
     n_train = len(firstsent)
     n_valid = len(secondsent)

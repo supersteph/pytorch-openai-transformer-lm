@@ -17,7 +17,8 @@ def _getData(path):
         return [sent for sent in X[::2]], [sent for sent in X[1::2]]
 
 def getData(data_dir, n_train=1497, n_valid=374):
-    first, second = _getData(os.path.join(os.getcwd(), 'trainproper.txt'))
+    print(os.getcwd())
+    first, second = _getData(os.path.join(os.getcwd(), 'challenge-data/test.rand.txt'))
     #teX1, teX2, teX3, _ = _rocstories(os.path.join(data_dir, 'cloze_test_test__spring2016 - cloze_test_ALL_test.csv'))
     trX1 = []
     trX2 = []

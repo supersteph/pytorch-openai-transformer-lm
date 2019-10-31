@@ -13,7 +13,7 @@ import time
 #import psutil
 
 #from analysis import rocstories as rocstories_analysis
-from datasets import getData
+from datasetsp import getData
 from model_pytorch import LMModel, load_openai_pretrained_model
 from opt import OpenAIAdam
 from text_utils import TextEncoder
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     # Constants
     submit = args.submit
-    n_ctx = 625*2
+    n_ctx = 626*2+4
     save_dir = args.save_dir
     desc = args.desc
     data_dir = args.data_dir
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
     n_special = 3
     max_len = n_ctx // 2 - 2
-    n_ctx = 625*2
+    n_ctx = 626*2+4
     vocab = n_vocab + n_special + n_ctx
     trX, trM = transform_roc(trX)
     vaX, vaM = transform_roc(vaX)

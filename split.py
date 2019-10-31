@@ -6,7 +6,7 @@ xTrain, xTest = train_test_split(text_file.readlines(), test_size = 0.2)
 
 with open(cwd+'/firsttrain.txt', 'w') as f:
 	for item in xTrain:
-		a = item.split("\t")[0]
+		a = item.split("\t"	)[0]
 		f.write("%s\n" % a)
 with open(cwd+'/firsttest.txt', 'w') as f:
 	for item in xTest:
