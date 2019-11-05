@@ -197,6 +197,7 @@ class LMHead(nn.Module):
 class LMModel(nn.Module):
     """ Transformer with language model head only """
     def __init__(self, cfg, vocab=40990, n_ctx=512, return_probs=False):
+        print(n_ctx)
         super(LMModel, self).__init__()
         self.transformer = TransformerModel(cfg, vocab=vocab, n_ctx=n_ctx)
         self.lm_head = LMHead(self.transformer, cfg, trunc_and_reshape=True)
@@ -250,16 +251,17 @@ class DoubleHeadModel(nn.Module):
         return lm_logits, task_logits
 
 
-def load_openai_pretrained_model(model, n_ctx=-1, n_special=-1, n_transfer=12, n_embd=768, path='./model/',
+def load_openai_pretrained_model(model, n_ctx=-1, n_special=-1, n_vocab=-1, n_transfer=12, n_embd=768, path='./model/',
                                  path_names='./'):
     # Load weights from TF model
-    print("Loading weights...")
+    print("Loading wights...")
     names = json.load(open(path_names + 'parameters_names.json'))
     shapes = json.load(open(path + 'params_shapes.json'))
     offsets = np.cumsum([np.prod(shape) for shape in shapes])
     init_params = [np.load(path + 'params_{}.npy'.format(n)) for n in range(10)]
     init_params = np.split(np.concatenate(init_params, 0), offsets)[:-1]
     init_params = [param.reshape(shape) for param, shape in zip(init_params, shapes)]
+    print()
     if n_ctx > 0:
         init_params[0] = init_params[0][:n_ctx]
     if n_special > 0:
@@ -280,13 +282,10 @@ def load_openai_pretrained_model(model, n_ctx=-1, n_special=-1, n_transfer=12, n
         n_transfer = 1 + n_transfer * 12
     init_params = [arr.squeeze() for arr in init_params]
 
-    try:
-        assert model.embed.weight.shape == init_params[0].shape
-    except AssertionError as e:
-        e.args += (model.embed.weight.shape, init_params[0].shape)
-        raise
 
-    model.embed.weight.data = torch.from_numpy(init_params[0])
+
+
+    model.embed.weight.data[:n_vocab + n_special,] = torch.from_numpy(init_params[0])[:n_vocab + n_special,]
 
     for name, ip in zip(names[1:n_transfer], init_params[1:n_transfer]):
         name = name[6:]  # skip "model/"

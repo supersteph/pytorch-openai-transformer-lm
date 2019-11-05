@@ -46,7 +46,7 @@ def iter_apply(Xs, Ms):
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device) #16 257 2
             MMB = torch.tensor(mmb).to(device)
-            lm_logits = dh_model(XMB)
+            lm_logits = lm_model(XMB)
             lm_losses = compute_loss_fct(XMB, MMB, lm_logits, only_return_losses=True)
             #print(len(logits))
             cost += lm_losses.sum().item()
@@ -56,12 +56,12 @@ def iter_apply(Xs, Ms):
 def iter_predict(Xs, Ms):
     logits = []
     with torch.no_grad():
-        dh_model.eval()
+        lm_model.eval()
         for xmb, mmb in iter_data(Xs, Ms, n_batch=n_batch_train, truncate=False, verbose=True):
             n = len(xmb)
             XMB = torch.tensor(xmb, dtype=torch.long).to(device)
             MMB = torch.tensor(mmb).to(device)
-            _, clf_logits = dh_model(XMB)
+            _, clf_logits = lm_model(XMB)
             logits.append(clf_logits.to("cpu").numpy())
     logits = np.concatenate(logits, 0)
     return logits
@@ -81,7 +81,7 @@ def log(save_dir, desc):
         if score > best_score:
             best_score = score
             path = os.path.join(save_dir, desc, 'best_params')
-            torch.save(dh_model.state_dict(), make_path(path))
+            torch.save(lm_model.state_dict(), make_path(path))
 
 
 def predict(dataset, submission_dir):
@@ -103,10 +103,10 @@ def run_epoch():
     for xmb, mmb in iter_data(*shuffle(trX, trM, random_state=np.random),
                                    n_batch=n_batch_train, truncate=True, verbose=True):
         global n_updates
-        dh_model.train()
+        lm_model.train()
         XMB = torch.tensor(xmb, dtype=torch.long).to(device)
         MMB = torch.tensor(mmb).to(device)
-        lm_logits = dh_model(XMB)
+        lm_logits = lm_model(XMB)
         compute_loss_fct(XMB, MMB, lm_logits)
         n_updates += 1
         if n_updates in [1000, 2000, 4000, 8000, 16000, 32000] and n_epochs == 0:
@@ -201,6 +201,7 @@ if __name__ == '__main__':
     max_len = n_ctx // 2 - 2
     n_ctx = 626*2+4
     vocab = n_vocab + n_special + n_ctx
+    print(vocab)
     trX, trM = transform_roc(trX)
     vaX, vaM = transform_roc(vaX)
 
@@ -210,10 +211,10 @@ if __name__ == '__main__':
     n_batch_train = args.n_batch * max(n_gpu, 1)
     n_updates_total = (n_train // n_batch_train) * args.n_iter
 
-    dh_model = LMModel(args, vocab, n_ctx)
+    lm_model = LMModel(args, vocab, n_ctx)
 
     criterion = nn.CrossEntropyLoss(reduce=False)
-    model_opt = OpenAIAdam(dh_model.parameters(),
+    model_opt = OpenAIAdam(lm_model.parameters(),
                            lr=args.lr,
                            schedule=args.lr_schedule,
                            warmup=args.lr_warmup,
@@ -225,17 +226,16 @@ if __name__ == '__main__':
                            vector_l2=args.vector_l2,
                            max_grad_norm=args.max_grad_norm)
     compute_loss_fct = LMLossCompute(criterion, model_opt)
-    load_openai_pretrained_model(dh_model.transformer, n_ctx=n_ctx, n_special=n_special)
-    dh_model.to(device)
-    dh_model = nn.DataParallel(dh_model)
+    load_openai_pretrained_model(lm_model.transformer, n_ctx=n_ctx, n_special=n_special, n_vocab=n_vocab)
+    lm_model.to(device)
+    lm_model = nn.DataParallel(lm_model)
     n_updates = 0
     n_epochs = 0
     if submit:
         path = os.path.join(save_dir, desc, 'best_params')
-        torch.save(dh_model.state_dict(), make_path(path))
+        torch.save(lm_model.state_dict(), make_path(path))
     best_score = 0
 
-    print(time.time()-start_time)
     for i in range(args.n_iter):
         print("running epoch", i)
         run_epoch()
