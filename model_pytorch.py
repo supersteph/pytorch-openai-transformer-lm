@@ -197,7 +197,6 @@ class LMHead(nn.Module):
 class LMModel(nn.Module):
     """ Transformer with language model head only """
     def __init__(self, cfg, vocab=40990, n_ctx=512, return_probs=False):
-        print(n_ctx)
         super(LMModel, self).__init__()
         self.transformer = TransformerModel(cfg, vocab=vocab, n_ctx=n_ctx)
         self.lm_head = LMHead(self.transformer, cfg, trunc_and_reshape=True)
@@ -254,14 +253,13 @@ class DoubleHeadModel(nn.Module):
 def load_openai_pretrained_model(model, n_ctx=-1, n_special=-1, n_vocab=-1, n_transfer=12, n_embd=768, path='./model/',
                                  path_names='./'):
     # Load weights from TF model
-    print("Loading wights...")
+    print("Loading weights...")
     names = json.load(open(path_names + 'parameters_names.json'))
     shapes = json.load(open(path + 'params_shapes.json'))
     offsets = np.cumsum([np.prod(shape) for shape in shapes])
     init_params = [np.load(path + 'params_{}.npy'.format(n)) for n in range(10)]
     init_params = np.split(np.concatenate(init_params, 0), offsets)[:-1]
     init_params = [param.reshape(shape) for param, shape in zip(init_params, shapes)]
-    print()
     if n_ctx > 0:
         init_params[0] = init_params[0][:n_ctx]
     if n_special > 0:

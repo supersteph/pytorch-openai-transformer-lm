@@ -18,8 +18,20 @@ from utils import (encode_dataset, iter_data,
                    ResultLogger, make_path)
 from loss import LMLossCompute
 
-def transform_roc(X):
+def getstart(index, length):
+    if index+max_len/2>length:
+        return length-max_len
+    elif index-max_len/2 < 0:
+        return 0
+    else:
+        return index - max_len/2
+
+
+def transform_roc(X, index):
     length = len(X)
+    if length > max_len:
+        X = X[index: index+max_len]
+        length = max_len
     xmb = np.zeros((1, length+2, 2), dtype=np.int32)
     start = encoder['_start_']
     delimiter = encoder['_delimiter_']
@@ -31,6 +43,10 @@ def transform_roc(X):
     xmb[:, :, 1] = np.arange(n_vocab + n_special, n_vocab + n_special + length+2)
     return xmb
 
+def getfirstdiff(first, second):
+    for index,(i,j) in enumerate(zip(first,second)):
+        if i != j:
+            return index
 
 def iter_predict(x):
     logits = []
@@ -50,6 +66,7 @@ def letter(first, second):
 def calculate(bpe, logit):
     sum = 0
     for i in range(len(bpe)-1):
+
         sum += logit[i, bpe[i+1]]
     return sum
 
@@ -60,8 +77,27 @@ def predict(firstsents, secondsents, firstbpes, secondbpes):
         secondsent = secondsents[i]
         firstbpe = firstbpes[i]
         secondbpe = secondbpes[i]
-        firstX = transform_roc(firstbpe)
-        secondX = transform_roc(secondbpe)
+
+        if len(firstbpe) ==0 or len(secondbpe) == 0:
+            arr.append(len(firstbpe)>len(secondbpe))
+            continue
+        if getfirstdiff(firstbpe, secondbpe) == None:
+            if (firstsent[-2] == " " or secondsent[-2] == " ") and firstsent[-1] == "." and secondsent[-1]== ".":
+                arr.append(firstsent[-2]==" ")
+            elif len(firstsent) != len(secondsent):
+                arr.append(len(firstsent) > len(secondsent))
+            elif firstsent[0].isupper() and not secondsent[0].isupper():
+                arr.append(firstsent[0].isupper())
+            elif not firstsent[0].isupper() and secondsent[0].isupper():
+                arr.append(firstsent[0].isupper())
+            elif "  " in firstsent and "  " in secondsent:
+                arr.append("  " in secondsent)
+            else:
+                arr.append("  " in secondsent)
+            continue
+        start_index = getstart(getfirstdiff(firstbpe, secondbpe), min(len(firstbpe), len(secondbpe)))
+        firstX = transform_roc(firstbpe, start_index)
+        secondX = transform_roc(secondbpe, start_index)
         #do the weird space thing
         if len(firstsent) != len(secondsent):
             arr.append(len(firstsent) > len(secondsent))
@@ -70,6 +106,8 @@ def predict(firstsents, secondsents, firstbpes, secondbpes):
         else:
             logits1 = iter_predict(firstX)
             logits2 = iter_predict(secondX)
+            firstbpe = firstbpe[start_index:max_len]
+            secondbpe = secondbpe[start_index:max_len]
             arr.append(calculate(firstbpe, logits1)>calculate(secondbpe, logits2))
     return arr;
 
@@ -90,7 +128,7 @@ label_decoders = {
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--desc', type=str, help="Description")
+    parser.add_argument('--desc', type=str, help="challenge")
     parser.add_argument('--log_dir', type=str, default='log/')
     parser.add_argument('--save_dir', type=str, default='save/')
     parser.add_argument('--data_dir', type=str, default='data/')
@@ -103,7 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_grad_norm', type=int, default=1)
     parser.add_argument('--lr', type=float, default=6.25e-5)
     parser.add_argument('--lr_warmup', type=float, default=0.002)
-    parser.add_argument('--n_ctx', type=int, default=512)
+    parser.add_argument('--n_ctx', type=int, default=1256)
     parser.add_argument('--n_embd', type=int, default=768)
     parser.add_argument('--n_head', type=int, default=12)
     parser.add_argument('--n_layer', type=int, default=12)
@@ -158,10 +196,8 @@ if __name__ == '__main__':
 
     n_special = 3
     max_len = n_ctx // 2 - 2
-    n_ctx = 626;
+    n_ctx = 1256;
     vocab = n_vocab + n_special + n_ctx
-    print(len(max(firstbpe, key=len)))
-    print(len(max(secondbpe, key=len)))
     n_train = len(firstsent)
     n_valid = len(secondsent)
 
@@ -176,6 +212,7 @@ if __name__ == '__main__':
     n_updates = 0
     n_epochs = 0
 
+    desc = "challenge"
     path = os.path.join(save_dir, desc, 'best_params')
     dh_model.load_state_dict(torch.load(path))
     arr = predict(firstsent, secondsent, firstbpe, secondbpe)

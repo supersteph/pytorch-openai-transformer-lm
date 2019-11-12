@@ -233,6 +233,7 @@ if __name__ == '__main__':
     n_epochs = 0
     if submit:
         path = os.path.join(save_dir, desc, 'best_params')
+        print(path)
         torch.save(lm_model.state_dict(), make_path(path))
     best_score = 0
 

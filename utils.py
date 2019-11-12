@@ -13,7 +13,9 @@ def encode_dataset(*splits, encoder):
     for split in splits:
         fields = []
         for field in split:
-            if isinstance(field[0], str):
+            if len(field) == 0:
+                field = []
+            elif isinstance(field[0], str):
                 field = encoder.encode(field)
             fields.append(field)
         encoded_splits.append(fields)
