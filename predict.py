@@ -77,7 +77,6 @@ def predict(firstsents, secondsents, firstbpes, secondbpes):
         secondsent = secondsents[i]
         firstbpe = firstbpes[i]
         secondbpe = secondbpes[i]
-
         if len(firstbpe) ==0 or len(secondbpe) == 0:
             arr.append(len(firstbpe)>len(secondbpe))
             continue
