@@ -68,7 +68,7 @@ def calculate(bpe, logit):
     for i in range(len(bpe)-1):
 
         sum += logit[i, bpe[i+1]]
-    return sum
+    return sum/len(bpe)
 
 def predict(firstsents, secondsents, firstbpes, secondbpes):
     arr = []
